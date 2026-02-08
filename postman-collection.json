@@ -1,0 +1,185 @@
+{
+  "info": {
+    "_postman_id": "5d2c6601-298f-4db4-a670-2be67aa92071",
+    "name": "Gymble Tester",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34845563",
+    "_collection_link": "https://go.postman.co/collection/34845563-5d2c6601-298f-4db4-a670-2be67aa92071?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"shreyansh+11@gymble.us\",\r\n    \"password\": \"user$456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url}}website/auth/login",
+          "host": [
+            "{{url}}website"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit Business Profile",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "businessId",
+              "value": "30",
+              "type": "text"
+            },
+            {
+              "key": "mobile",
+              "value": "123456789",
+              "type": "text"
+            },
+            {
+              "key": "about",
+              "value": "nsaihsauyfhsvuysacfgshbjvhu b uisghusigbujhg",
+              "type": "text"
+            },
+            {
+              "key": "tagline",
+              "value": "tyyuwopqrub fh jsifgsuifkjhjn ",
+              "type": "text"
+            },
+            {
+              "key": "brand",
+              "value": "one brand",
+              "type": "text"
+            },
+            {
+              "key": "logo",
+              "type": "file",
+              "src": "/C:/Users/User/Desktop/1720181351660471800.webp"
+            },
+            {
+              "key": "cover",
+              "type": "file",
+              "src": "/C:/Users/User/Downloads/unnamed.jpg"
+            },
+            {
+              "key": "socialMedia[0][businessSocialId]",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "socialMedia[0][socialMediaTypeId]",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "socialMedia[0][link]",
+              "value": "tewitter.com",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{url}}website/business/profile/edit",
+          "host": [
+            "{{url}}website"
+          ],
+          "path": [
+            "business",
+            "profile",
+            "edit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Business Details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{url}}website/business/profile/bisDetails",
+          "host": [
+            "{{url}}website"
+          ],
+          "path": [
+            "business",
+            "profile",
+            "bisDetails"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Profile Details",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bisLink\": \"strongest-fitness\",\r\n    \"page\": 1,\r\n    \"limit\": 10,\r\n    \"locationLink\": null,\r\n    \"date\": \"2026-02-04\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url}}website/business/profile/details",
+          "host": [
+            "{{url}}website"
+          ],
+          "path": [
+            "business",
+            "profile",
+            "details"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"locationId\": 0,\r\n    \"startDate\": \"2026-01-01\",\r\n    \"endDate\": \"2026-12-31\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url}}test/finance",
+          "host": [
+            "{{url}}test"
+          ],
+          "path": [
+            "finance"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

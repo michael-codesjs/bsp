@@ -2,14 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useAuthStore } from "@/store/use-auth-store";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input/input";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { useRouter } from "next/navigation";
-import { User, Sms, Global, Call, Verify } from "iconsax-react";
+import { 
+  Sms, 
+  Global, 
+  Call, 
+  Verify, 
+  InfoCircle, 
+  Camera,
+  Magicpen,
+  Save2,
+  CloseCircle,
+  Location,
+  Instagram,
+  Edit2,
+  Brush,
+  DirectboxSend
+} from "iconsax-react";
 import { BusinessProfile } from "@/types/business";
 import axios from "@/lib/api";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type ProfileFormValues = {
   businessName: string;
@@ -19,76 +35,99 @@ type ProfileFormValues = {
   instagram: string;
   logo: string;
   banner: string;
+  description: string;
+  location: string;
 };
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user } = useAuthStore();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [businessId, setBusinessId] = useState<string | null>(null);
 
-  // Initialize form with default values (could be fetched from API)
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProfileFormValues>({
+  const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<ProfileFormValues>({
     defaultValues: {
-      businessName: "Strongest Fitness",
-      email: "hello@strongest.fitness",
-      mobile: "+1 (555) 000-0000",
-      twitter: "@strongest",
-      instagram: "@strongest_fit",
+      businessName: "",
+      email: "",
+      mobile: "",
+      twitter: "",
+      instagram: "",
       logo: "",
-      banner: ""
+      banner: "",
+      description: "",
+      location: ""
     }
   });
 
-  // Watch for image changes to update local state if needed
-  // (In this implementation, we use callbacks from ImageCropper to set values)
+  const watchedValues = watch();
 
-  // Hydrate form with mock data on load
   useEffect(() => {
-    // Ideally fetch from API here. For now validation is static but persistent logic will be handled in submit
-    // We'll verify this works via the public page flow later
-    setValue("logo", "https://images.unsplash.com/photo-1599058917232-d750d2009aa7?q=80&w=200&auto=format&fit=crop");
-    setValue("banner", "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2000&auto=format&fit=crop");
-    
-    setLogoPreview("https://images.unsplash.com/photo-1599058917232-d750d2009aa7?q=80&w=200&auto=format&fit=crop");
-    setBannerPreview("https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2000&auto=format&fit=crop");
-  }, [setValue]);
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get("website/business/profile/bisDetails");
+        const data = response.data?.data || response.data;
+        
+        if (data) {
+          setBusinessId(data.id || data.businessId);
+          
+          reset({
+            businessName: data.bisName || data.name || "",
+            email: data.email || "",
+            mobile: data.mobile || data.phone || "",
+            logo: data.logo || "",
+            banner: data.cover || data.banner || "",
+            description: data.about || "",
+            location: data.location || "New York, NY",
+            twitter: data.socialMedia?.find((s: any) => s.socialMediaTypeId === 1 || s.type === "twitter")?.link || "",
+            instagram: data.socialMedia?.find((s: any) => s.socialMediaTypeId === 2 || s.type === "instagram")?.link || ""
+          });
+
+          if (data.logo) setLogoPreview(data.logo);
+          if (data.cover || data.banner) setBannerPreview(data.cover || data.banner);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile details", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [reset]);
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSaving(true);
     try {
-      // 1. Prepare payload matching BusinessProfile type partially or as the API expects
-      // Since it's a mock backend via local storage or just a demo API endpoint check
-      // We will simulate a save.
+      const formData = new FormData();
+      formData.append("businessId", businessId || "30");
+      formData.append("brand", data.businessName);
+      formData.append("mobile", data.mobile);
+      formData.append("email", data.email);
+      formData.append("about", data.description);
       
-      const payload: Partial<BusinessProfile> = {
-        name: data.businessName,
-        email: data.email,
-        phone: data.mobile,
-        logo: data.logo,
-        banner: data.banner,
-        socials: {
-          twitter: data.twitter,
-          instagram: data.instagram
-        }
-      };
-
-      console.log("Saving profile:", payload);
+      if (data.logo && data.logo.startsWith("data:image")) {
+        const logoFile = dataURLtoFile(data.logo, "logo.jpg");
+        formData.append("logo", logoFile);
+      }
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // In a real app, we'd POST to /edit-business-profile
-      // For this prototype, we'll store in localStorage to persist across navigation demo if needed
-      if (typeof window !== "undefined") {
-        localStorage.setItem("business_profile_demo", JSON.stringify(payload));
+      if (data.banner && data.banner.startsWith("data:image")) {
+        const bannerFile = dataURLtoFile(data.banner, "banner.jpg");
+        formData.append("cover", bannerFile);
       }
 
-      // Redirect to public page to see changes (using the slug)
-      // Assuming slug is static for demo as 'strongest-fitness'
-      router.push("/business-profile/strongest-fitness");
+      formData.append("socialMedia[0][socialMediaTypeId]", "1");
+      formData.append("socialMedia[0][link]", data.twitter);
+      
+      formData.append("socialMedia[1][socialMediaTypeId]", "2");
+      formData.append("socialMedia[1][link]", data.instagram);
 
+      await axios.put("website/business/profile/edit", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      router.push("/business-profile/strongest-fitness");
     } catch (error) {
       console.error("Failed to save profile", error);
     } finally {
@@ -96,135 +135,261 @@ export default function ProfilePage() {
     }
   };
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black tracking-tight text-zinc-900">Edit Profile</h1>
-        <p className="text-zinc-500 font-medium">Manage your business information and appearance.</p>
+  const dataURLtoFile = (dataurl: string, filename: string) => {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)![1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
+        <div className="flex justify-between items-center mb-8">
+            <div className="h-8 w-48 bg-zinc-200 rounded-lg" />
+            <div className="h-12 w-32 bg-zinc-200 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-8 space-y-6">
+                <div className="h-48 bg-white rounded-3xl border border-zinc-100" />
+                <div className="h-96 bg-white rounded-3xl border border-zinc-100" />
+            </div>
+            <div className="col-span-4 space-y-6">
+                <div className="h-64 bg-white rounded-3xl border border-zinc-100" />
+            </div>
+        </div>
       </div>
+    );
+  }
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-        
-        {/* Media Section */}
-        <section className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm space-y-8">
-          <div className="flex items-center gap-3 pb-4 border-b border-zinc-50">
-            <h2 className="text-lg font-bold text-zinc-900">Media Assets</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-1">
-              <ImageCropper 
-                label="Logo" 
-                aspectRatio={1} 
-                className="w-full"
-                currentImage={logoPreview || undefined}
-                onImageCropped={(img) => {
-                  setLogoPreview(img);
-                  setValue("logo", img);
-                }}
-              />
-              <p className="text-[10px] text-zinc-400 mt-2 font-medium">
-                Recommended: 500x500px. Square crop.
-              </p>
+  return (
+    <div className="max-w-6xl mx-auto pb-20 px-4">
+      {/* Refined Header */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div className="space-y-1">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                    <Brush size={22} variant="Bold" color="currentColor" />
+                </div>
+                <h1 className="text-2xl font-black text-zinc-900 tracking-tight">Profile Settings</h1>
             </div>
-            
-            <div className="md:col-span-2">
-              <ImageCropper 
-                label="Cover Banner" 
-                aspectRatio={16/5} 
-                className="w-full"
-                currentImage={bannerPreview || undefined}
-                onImageCropped={(img) => {
-                  setBannerPreview(img);
-                  setValue("banner", img);
-                }}
-              />
-              <p className="text-[10px] text-zinc-400 mt-2 font-medium">
-                Recommended: 1500x500px. Wide landscape crop.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Business Details */}
-        <section className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm space-y-8">
-          <div className="flex items-center gap-3 pb-4 border-b border-zinc-50">
-            <h2 className="text-lg font-bold text-zinc-900">Business Details</h2>
-          </div>
-
-          <div className="grid gap-6">
-            <Input
-              label="Business Name"
-              {...register("businessName", { required: "Business Name is required" })}
-              error={errors.businessName?.message}
-              startIcon={<Verify variant="Linear" size={18} className="text-zinc-400" />}
-              className="bg-zinc-50 border-zinc-200 h-12 rounded-xl"
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Email Address"
-                type="email"
-                {...register("email", { required: "Email is required" })}
-                error={errors.email?.message}
-                startIcon={<Sms variant="Linear" size={18} className="text-zinc-400" />}
-                className="bg-zinc-50 border-zinc-200 h-12 rounded-xl"
-              />
-              <Input
-                label="Phone Number"
-                {...register("mobile", { required: "Phone is required" })}
-                error={errors.mobile?.message}
-                startIcon={<Call variant="Linear" size={18} className="text-zinc-400" />}
-                className="bg-zinc-50 border-zinc-200 h-12 rounded-xl"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Social Links */}
-        <section className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm space-y-8">
-          <div className="flex items-center gap-3 pb-4 border-b border-zinc-50">
-            <h2 className="text-lg font-bold text-zinc-900">Social Connections</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="Twitter Handle"
-              placeholder="@username"
-              {...register("twitter")}
-              startIcon={<Global variant="Linear" size={18} className="text-zinc-400" />}
-              className="bg-zinc-50 border-zinc-200 h-12 rounded-xl"
-            />
-            <Input
-              label="Instagram Handle"
-              placeholder="@username"
-              {...register("instagram")}
-              startIcon={<Global variant="Linear" size={18} className="text-zinc-400" />}
-              className="bg-zinc-50 border-zinc-200 h-12 rounded-xl"
-            />
-          </div>
-        </section>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-4 sticky bottom-8 pt-4">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            className="h-14 px-8 rounded-2xl font-bold text-zinc-500 hover:text-zinc-900"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSaving}
-            className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black uppercase tracking-widest shadow-xl shadow-primary/20 text-sm hover:scale-105 transition-all active:scale-95"
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
+            <p className="text-sm font-medium text-zinc-400 ml-13">Configure your public storefront and branding.</p>
         </div>
 
-      </form>
+        <div className="flex items-center gap-3">
+             <Button 
+                variant="outline" 
+                className="h-11 px-6 rounded-xl font-bold text-zinc-500 border-zinc-200 hover:bg-zinc-50"
+                onClick={() => router.push("/dashboard")}
+            >
+                Discard
+            </Button>
+            <Button 
+                onClick={handleSubmit(onSubmit)}
+                disabled={isSaving}
+                className="h-11 px-8 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-sm shadow-lg shadow-zinc-900/10 transition-all flex items-center gap-2"
+            >
+                {isSaving ? (
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                ) : (
+                    <Save2 size={18} variant="Bold" color="currentColor" />
+                )}
+                {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main Content Column */}
+        <div className="lg:col-span-8 space-y-8">
+            
+            {/* Business Identity Card */}
+            <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-zinc-50 flex items-center justify-between">
+                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs flex items-center gap-2">
+                        <Verify size={16} variant="Bold" className="text-primary" color="currentColor" />
+                        Business Identity
+                    </h2>
+                </div>
+                <div className="p-8 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                        {/* Logo Upload - More Compact */}
+                        <div className="md:col-span-1 flex flex-col items-center space-y-3">
+                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">Business Logo</label>
+                            <div className="relative group">
+                                <div className="w-32 h-32 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary/50 relative">
+                                    {logoPreview ? (
+                                        <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Camera size={32} className="text-zinc-300" color="currentColor" />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                         <ImageCropper 
+                                            label=""
+                                            hideDefaultUI={true}
+                                            aspectRatio={1} 
+                                            className="w-full h-full absolute inset-0 opacity-0 cursor-pointer"
+                                            currentImage={logoPreview || undefined}
+                                            onImageCropped={(img) => {
+                                                setLogoPreview(img);
+                                                setValue("logo", img);
+                                            }}
+                                        />
+                                        <Camera size={20} className="text-white" variant="Bold" color="currentColor" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Name & Bio */}
+                        <div className="md:col-span-3 space-y-6">
+                            <Input
+                                label="Display Name"
+                                placeholder="e.g. Strongest Fitness"
+                                {...register("businessName", { required: "Business Name is required" })}
+                                error={errors.businessName?.message}
+                                className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm font-medium"
+                            />
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block">About Bio</label>
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1">
+                                        <Magicpen size={12} variant="Bold" color="currentColor" />
+                                        AI Enhance Available
+                                    </span>
+                                </div>
+                                <textarea 
+                                    {...register("description")}
+                                    placeholder="Briefly describe what your business offers..."
+                                    className="w-full min-h-[120px] bg-zinc-50 border-none rounded-xl p-4 text-sm font-medium text-zinc-600 outline-none focus:bg-white transition-all placeholder:text-zinc-300 resize-none"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Contact Details Card */}
+            <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-zinc-50">
+                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs flex items-center gap-2">
+                        <DirectboxSend size={16} variant="Bold" className="text-primary" color="currentColor" />
+                        Contact & Location
+                    </h2>
+                </div>
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                        label="Support Email"
+                        type="email"
+                        {...register("email")}
+                        startIcon={<Sms variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
+                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                    />
+                    <Input
+                        label="Public Phone"
+                        {...register("mobile")}
+                        startIcon={<Call variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
+                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                    />
+                    <div className="md:col-span-2">
+                         <Input
+                            label="Physical Address"
+                            {...register("location")}
+                            startIcon={<Location variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
+                            className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                        />
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {/* Sidebar Column */}
+        <div className="lg:col-span-4 space-y-8">
+            
+            {/* Visual Media Card */}
+            <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-zinc-50">
+                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs">Page Styling</h2>
+                </div>
+                <div className="p-6 space-y-4">
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">Cover Banner</label>
+                        <div className="relative h-32 w-full rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden group hover:border-primary/50 transition-all">
+                            {bannerPreview ? (
+                                <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
+                            ) : (
+                                <Camera size={24} className="text-zinc-300" color="currentColor" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <ImageCropper 
+                                    label=""
+                                    hideDefaultUI={true}
+                                    aspectRatio={16/5} 
+                                    className="w-full h-full absolute inset-0 opacity-0 cursor-pointer"
+                                    currentImage={bannerPreview || undefined}
+                                    onImageCropped={(img) => {
+                                        setBannerPreview(img);
+                                        setValue("banner", img);
+                                    }}
+                                />
+                                <Camera size={20} className="text-white" variant="Bold" color="currentColor" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-4 bg-zinc-50 rounded-xl">
+                        <div className="flex items-center gap-2 mb-1">
+                            <InfoCircle size={14} className="text-primary" variant="Bold" color="currentColor" />
+                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-wider">Format Guides</p>
+                        </div>
+                        <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-widest">
+                            Logo: 400x400 JPG/PNG<br/>
+                            Banner: 1920x600 JPG
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+             {/* Social Links Card */}
+             <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-zinc-50">
+                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs flex items-center gap-2">
+                        <Global size={16} variant="Bold" className="text-primary" color="currentColor" />
+                        Online Presence
+                    </h2>
+                </div>
+                <div className="p-6 space-y-4">
+                    <Input
+                        label="Instagram"
+                        placeholder="username"
+                        {...register("instagram")}
+                        startIcon={<Instagram variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
+                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                    />
+                    <Input
+                        label="Twitter / X"
+                        placeholder="handle"
+                        {...register("twitter")}
+                        startIcon={<Global variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
+                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                    />
+                </div>
+            </section>
+
+            {/* Live Preview Button */}
+            <Button 
+                onClick={() => router.push("/business-profile/strongest-fitness")}
+                variant="outline"
+                className="w-full h-14 rounded-2xl border-white bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-900/10 transition-all"
+            >
+                Preview Live Page
+            </Button>
+        </div>
+      </div>
     </div>
   );
 }

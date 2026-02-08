@@ -9,8 +9,8 @@ export type BusinessProfile = {
   location: string;
   phone: string;
   email: string;
-  website: string;
-  socials: {
+  website?: string;
+  socials?: {
     instagram?: string;
     facebook?: string;
     twitter?: string;
@@ -22,4 +22,7 @@ export type BusinessProfile = {
   amenities?: string[];
   rating?: number;
   reviews?: number;
+  upcoming?: any[];
+  listings?: any[];
+  schedules?: any[];
 };

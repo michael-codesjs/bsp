@@ -3,13 +3,11 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { Button } from "@/components/ui/button";
-// Custom built-in modal used instead of external Dialog component to avoid dependencies
-// import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"; 
-// import { Slider } from "@/components/ui/slider"; 
 import getCroppedImg from "@/lib/canvas";
-import { CloudPlus, GalleryAdd, Trash } from "iconsax-react";
+import { GalleryAdd, Trash, Camera } from "iconsax-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Modal } from "@/components/ui/modal";
 
 interface ImageCropperProps {
   label: string;
@@ -17,6 +15,7 @@ interface ImageCropperProps {
   onImageCropped: (croppedImage: string) => void;
   currentImage?: string;
   className?: string;
+  hideDefaultUI?: boolean;
 }
 
 export function ImageCropper({
@@ -25,6 +24,7 @@ export function ImageCropper({
   onImageCropped,
   currentImage,
   className,
+  hideDefaultUI = false,
 }: ImageCropperProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -46,6 +46,8 @@ export function ImageCropper({
         setIsModalOpen(true);
       });
       reader.readAsDataURL(file);
+      // Reset input value so same file can be selected again
+      e.target.value = "";
     }
   };
 
@@ -65,14 +67,93 @@ export function ImageCropper({
     }
   };
 
+  const renderModal = () => (
+    <Modal 
+      isOpen={isModalOpen} 
+      onClose={() => setIsModalOpen(false)}
+      title="Adjust Image"
+      maxWidth="2xl"
+    >
+      <div className="space-y-6">
+        <div className="relative w-full h-[400px] bg-zinc-900 overflow-hidden">
+          <Cropper
+            image={imageSrc || ""}
+            crop={crop}
+            zoom={zoom}
+            aspect={aspectRatio}
+            onCropChange={setCrop}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+            showGrid={false}
+            classes={{
+              containerClassName: "bg-[#111]",
+              mediaClassName: "",
+              cropAreaClassName: "border-2 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]"
+            }}
+          />
+        </div>
+
+        <div className="p-8 bg-white space-y-8">
+          <div className="flex items-center gap-6">
+            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest w-16">Zoom</span>
+            <input
+              type="range"
+              value={zoom}
+              min={1}
+              max={3}
+              step={0.1}
+              aria-labelledby="Zoom"
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="w-full h-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all border-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsModalOpen(false)}
+              className="h-12 px-8 rounded-2xl font-bold text-sm border-zinc-200"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveCrop}
+              className="bg-zinc-900 hover:bg-black text-white h-12 px-10 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-900/10 transition-all"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+
+  if (hideDefaultUI) {
+    return (
+      <>
+        <div className={className}>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+          />
+        </div>
+        {renderModal()}
+      </>
+    );
+  }
+
   return (
     <div className={cn("space-y-4", className)}>
-      <label className="block text-sm font-bold text-zinc-900 uppercase tracking-wide">
-        {label}
-      </label>
+      {label && (
+        <label className="block text-sm font-bold text-zinc-900 uppercase tracking-wide">
+          {label}
+        </label>
+      )}
 
       {previewImage ? (
-        <div className="relative group overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 transition-all hover:border-zinc-300">
+        <div className="relative group overflow-hidden rounded-[32px] border border-zinc-100 bg-zinc-50 transition-all hover:border-primary/20">
            <div 
              className="relative w-full"
              style={{ 
@@ -83,12 +164,13 @@ export function ImageCropper({
                src={previewImage}
                alt="Preview"
                fill
-               className="object-cover transition-transform duration-500 group-hover:scale-105"
+               className="object-cover transition-transform duration-700 group-hover:scale-105"
              />
            </div>
            
-           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
-             <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-zinc-100 transition-colors shadow-lg">
+           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
+             <label className="cursor-pointer bg-white text-zinc-900 h-11 px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all shadow-xl flex items-center gap-2">
+               <Camera size={18} variant="Bold" />
                Change
                <input
                  type="file"
@@ -102,23 +184,23 @@ export function ImageCropper({
                  setPreviewImage(null);
                  onImageCropped("");
                }}
-               className="bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 transition-colors shadow-lg"
+               className="bg-white text-red-500 w-11 h-11 rounded-2xl hover:bg-red-50 transition-all shadow-xl flex items-center justify-center group/trash"
              >
-               <Trash size={16} variant="Bold" />
+               <Trash size={18} variant="Bold" className="group-hover/trash:scale-110 transition-transform" />
              </button>
            </div>
         </div>
       ) : (
-        <label className="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-zinc-200 rounded-2xl cursor-pointer bg-zinc-50/50 hover:bg-zinc-50 hover:border-primary/50 transition-all group">
-          <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-            <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <GalleryAdd size={24} className="text-zinc-400 group-hover:text-primary transition-colors" variant="Bold" />
+        <label className="flex flex-col items-center justify-center w-full min-h-[200px] border-2 border-dashed border-zinc-200 rounded-[32px] cursor-pointer bg-zinc-50/50 hover:bg-white hover:border-primary/50 transition-all group relative overflow-hidden shadow-sm">
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-16 h-16 rounded-3xl bg-white shadow-xl shadow-zinc-200/50 border border-zinc-100 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+              <GalleryAdd size={32} className="text-zinc-400 group-hover:text-primary transition-colors" variant="Bold" color="currentColor" />
             </div>
-            <p className="text-sm text-zinc-600 font-medium">
-              <span className="font-bold text-zinc-900 group-hover:text-primary transition-colors">Click to upload</span> {label}
+            <p className="text-sm text-zinc-600 font-bold mb-1">
+              <span className="text-zinc-900 group-hover:text-primary transition-colors">Click to upload</span> {label}
             </p>
-            <p className="text-xs text-zinc-400 mt-1">
-              SVG, PNG, JPG (max. 2MB)
+            <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest">
+              JPG, PNG or WEBP (MAX 5MB)
             </p>
           </div>
           <input
@@ -130,75 +212,7 @@ export function ImageCropper({
         </label>
       )}
 
-      {/* Custom Modal Overlay */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-zinc-100/20">
-            <div className="p-6 border-b border-zinc-100 bg-white z-10 relative flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-black tracking-tight text-zinc-900">Adjust Image</h3>
-                <p className="text-sm text-zinc-500 font-medium">Drag to reposition and scroll/slider to zoom</p>
-              </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-zinc-400 hover:text-red-500 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-            
-            <div className="relative w-full h-[400px] bg-zinc-900">
-              <Cropper
-                image={imageSrc || ""}
-                crop={crop}
-                zoom={zoom}
-                aspect={aspectRatio}
-                onCropChange={setCrop}
-                onCropComplete={onCropComplete}
-                onZoomChange={setZoom}
-                showGrid={false}
-                classes={{
-                  containerClassName: "bg-[#111]",
-                  mediaClassName: "",
-                  cropAreaClassName: "border-2 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]"
-                }}
-              />
-            </div>
-
-            <div className="p-6 bg-white space-y-6">
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider w-12">Zoom</span>
-                <input
-                  type="range"
-                  value={zoom}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  aria-labelledby="Zoom"
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-xs font-bold border-zinc-200 h-10 px-6"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSaveCrop}
-                  className="bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase tracking-widest h-10 px-6 shadow-lg shadow-primary/25"
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {renderModal()}
     </div>
   );
 }

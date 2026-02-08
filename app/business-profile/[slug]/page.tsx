@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBusinessProfile } from "@/lib/api";
-import ProfileContent from "./profile-content";
+import { getBusinessProfile } from "@/lib/business";
+import ProfileContent from "./_components";
 
 interface BusinessProfilePageProps {
   params: Promise<{ slug: string }>;
@@ -10,6 +10,8 @@ interface BusinessProfilePageProps {
 export async function generateMetadata({ params }: BusinessProfilePageProps): Promise<Metadata> {
   const { slug } = await params;
   const business = await getBusinessProfile(slug);
+
+  console.log('business:', business?.name)
 
   if (!business) {
     return {
@@ -20,11 +22,11 @@ export async function generateMetadata({ params }: BusinessProfilePageProps): Pr
 
   return {
     title: `${business.name} | Gymble Business Profile`,
-    description: business.description.substring(0, 160),
+    description: business.description?.substring(0, 160) || "View this business profile on Gymble.",
     openGraph: {
       title: `${business.name} - Sports & Fitness`,
-      description: business.description.substring(0, 160),
-      images: [business.banner],
+      description: business.description?.substring(0, 160) || "View this business profile on Gymble.",
+      images: [business.banner || "/gymble.png"],
     },
   };
 }
