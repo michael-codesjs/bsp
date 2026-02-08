@@ -49,8 +49,8 @@ export function StatCard({
       <div className="relative z-10 flex flex-col h-full justify-between">
         <div className="flex justify-between items-center">
           <p className="text-white font-semibold text-base leading-[120%]">{label}</p>
-          <div className="w-11 h-11 flex items-center justify-center bg-white/95 rounded-full p-2.5 shadow-sm">
-            <IconComponent size={24} color="#000000" variant="Bold" />
+          <div className="w-11 h-11 flex items-center justify-center bg-white/95 rounded-full p-2.5 shadow-sm text-zinc-950">
+            <IconComponent size={24} color="currentColor" variant="Bold" />
           </div>
         </div>
         

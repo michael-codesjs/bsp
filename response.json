@@ -1,0 +1,91 @@
+{
+  "salesChart": {
+    "labels": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "datasets": [
+      {
+        "name": "Total Revenue",
+        "data": [
+          16095,
+          3990,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "New Bookings",
+        "data": [
+          16093,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Cancellations",
+        "data": [
+          50,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "piChart": {
+    "labels": [
+      "Experiences",
+      "Memberships",
+      "Classes",
+      "Packages",
+      "Tournaments",
+      "Passes",
+      "Rentals"
+    ],
+    "percentages": [
+      13.59,
+      44.27,
+      11.45,
+      21.77,
+      1.82,
+      1.17,
+      5.93
+    ]
+  }
+}

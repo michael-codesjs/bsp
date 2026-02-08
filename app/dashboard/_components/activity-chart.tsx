@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { SegmentedControl } from "./segmented-control";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/utils";
 
 const data = [
@@ -55,28 +55,44 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function ActivityChart() {
-  const [timeRange, setTimeRange] = useState("1Y");
+interface ActivityChartProps {
+  data?: any;
+  timeRange?: string;
+}
+
+export function ActivityChart({ data: incomingData, timeRange = "1Y" }: ActivityChartProps) {
+  const getGrainLabel = () => {
+    switch (timeRange) {
+      case "24H": return "Hourly";
+      case "7D": 
+      case "30D": return "Daily";
+      case "1Y": return "Monthly";
+      default: return "Activity";
+    }
+  };
+
+  // Use data from API or fallback to mock if null
+  const chartData = incomingData?.labels?.map((label: string, index: number) => ({
+    name: label,
+    revenue: incomingData.datasets.find((d: any) => d.name === "Total Revenue")?.data[index] || 0,
+    bookings: incomingData.datasets.find((d: any) => d.name === "New Bookings")?.data[index] || 0,
+    cancellations: incomingData.datasets.find((d: any) => d.name === "Cancellations")?.data[index] || 0,
+  })) || data;
 
   return (
     <div className="flex h-full min-h-[460px] flex-col gap-6 rounded-[32px] border border-zinc-100 bg-white p-8">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-black text-zinc-900 tracking-tight">Your Activity</h2>
-          <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Monthly activity trends</p>
+          <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{getGrainLabel()} activity trends</p>
         </div>
-        <SegmentedControl
-          options={timePeriods}
-          value={timeRange}
-          onChange={setTimeRange}
-        />
       </header>
 
       <hr className="border-t border-zinc-100" />
 
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="#f4f4f5" strokeDasharray="3 3" />
             <XAxis 
               dataKey="name" 
@@ -89,9 +105,14 @@ export function ActivityChart() {
               axisLine={false} 
               tickLine={false} 
               tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 700 }}
-              tickFormatter={(value) => `$${value/1000}k`}
+              tickFormatter={(value) => `$${value >= 1000 ? (value/1000).toFixed(0) + 'k' : value}`}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#f4f4f5', strokeWidth: 2 }} />
+            <Tooltip 
+              content={<CustomTooltip />} 
+              cursor={{ stroke: '#f4f4f5', strokeWidth: 2 }} 
+              allowEscapeViewBox={{ x: true, y: true }}
+              wrapperStyle={{ zIndex: 100 }}
+            />
             
             <Line
               type="monotone"
@@ -128,11 +149,11 @@ export function ActivityChart() {
       <div className="flex items-center justify-center gap-8 pt-2">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-[#17A7A9]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Revenue</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total Revenue</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-[#F2AB3C]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Bookings</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">New Bookings</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />

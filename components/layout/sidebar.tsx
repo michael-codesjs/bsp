@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,13 +22,9 @@ const menuItems = [
   { icon: Setting2, label: "Settings", href: "/dashboard/settings" },
 ];
 
-interface SidebarProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <>
@@ -36,7 +32,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? 88 : 280 }}
-        className="fixed left-0 top-0 bottom-0 z-40 bg-white border-r border-zinc-100 hidden md:flex flex-col transition-all duration-300 ease-in-out"
+        className="sticky top-0 z-40 bg-white border-r border-zinc-100 hidden md:flex flex-col h-screen transition-all duration-300 ease-in-out shrink-0"
       >
         {/* Logo Area */}
         <div className="h-20 flex items-center px-6 mb-4">

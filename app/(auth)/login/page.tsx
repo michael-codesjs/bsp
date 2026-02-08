@@ -11,8 +11,6 @@ import { Sms, Lock1, Google, Apple } from "iconsax-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import Cookies from "js-cookie";
-import axios from "@/lib/api";
 import { loginAction } from "./actions";
 
 const loginSchema = z.object({

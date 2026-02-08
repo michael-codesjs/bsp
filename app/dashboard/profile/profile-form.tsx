@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input/input";
@@ -11,16 +11,23 @@ import {
   Global, 
   Call, 
   Verify, 
-  InfoCircle, 
   Camera,
   Magicpen,
   Save2,
   Location,
   Instagram,
   Brush,
-  DirectboxSend
+  DirectboxSend,
+  ArrowRight,
+  Maximize1,
+  Flash,
+  Edit,
+  Trash
 } from "iconsax-react";
 import axios from "@/lib/api";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type ProfileFormValues = {
   businessName: string;
@@ -44,9 +51,8 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
   const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.logo || null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(initialData?.cover || initialData?.banner || null);
   const [isSaving, setIsSaving] = useState(false);
-  const [businessId] = useState<string | null>(initialData?.id || initialData?.businessId || "30");
 
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<ProfileFormValues>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<ProfileFormValues>({
     defaultValues: {
       businessName: initialData?.bisName || initialData?.name || "",
       email: initialData?.email || "",
@@ -63,9 +69,10 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSaving(true);
+    const saveToast = toast.loading("Updating your public profile...");
     try {
       const formData = new FormData();
-      formData.append("businessId", businessId || "30");
+      formData.append("businessId", initialData?.id || initialData?.businessId || "30");
       formData.append("brand", data.businessName);
       formData.append("mobile", data.mobile);
       formData.append("email", data.email);
@@ -92,9 +99,11 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      router.push("/business-profile/strongest-fitness");
+      toast.success("Profile saved successfully", { id: saveToast });
+      router.refresh();
     } catch (error) {
       console.error("Failed to save profile", error);
+      toast.error("Failed to update profile", { id: saveToast });
     } finally {
       setIsSaving(false);
     }
@@ -113,233 +122,229 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 px-4">
-      {/* Refined Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div className="space-y-1">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                    <Brush size={22} variant="Bold" color="currentColor" />
-                </div>
-                <h1 className="text-2xl font-black text-zinc-900 tracking-tight">Profile Settings</h1>
-            </div>
-            <p className="text-sm font-medium text-zinc-400 ml-13">Configure your public storefront and branding.</p>
+    <div className="space-y-10 pb-20">
+      {/* Refined Header - Exact Dashboard Style */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">Business Profile</h1>
+          <p className="text-zinc-500 font-medium mt-1">Manage your public storefront and brand identity.</p>
         </div>
-
         <div className="flex items-center gap-3">
              <Button 
                 variant="outline" 
-                className="h-11 px-6 rounded-xl font-bold text-zinc-500 border-zinc-200 hover:bg-zinc-50"
+                className="h-11 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-400 border-zinc-200 hover:bg-zinc-50 transition-all hover:text-zinc-900"
                 onClick={() => router.push("/dashboard")}
             >
-                Discard
+                Cancel
             </Button>
             <Button 
                 onClick={handleSubmit(onSubmit)}
                 disabled={isSaving}
-                className="h-11 px-8 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-sm shadow-lg shadow-zinc-900/10 transition-all flex items-center gap-2"
+                className="h-11 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 transition-all flex items-center gap-2 active:scale-95"
             >
                 {isSaving ? (
                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 ) : (
                     <Save2 size={18} variant="Bold" color="currentColor" />
                 )}
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? "Syncing..." : "Publish Changes"}
             </Button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Main Content Column */}
-        <div className="lg:col-span-8 space-y-8">
-            
-            {/* Business Identity Card */}
-            <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-zinc-50 flex items-center justify-between">
-                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs flex items-center gap-2">
-                        <Verify size={16} variant="Bold" className="text-primary" color="currentColor" />
-                        Business Identity
-                    </h2>
+      {/* Hero Branding Section - Clean & Integrated */}
+      <div className="bg-white rounded-[32px] border border-zinc-100 p-8 shadow-sm">
+         <div className="relative group">
+            {/* Banner Preview */}
+            <div className="relative h-64 w-full rounded-[24px] bg-zinc-50 border border-zinc-100 overflow-hidden group/banner">
+                {bannerPreview ? (
+                    <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105" />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-zinc-300 gap-3">
+                        <Maximize1 size={40} className="text-zinc-200" color="currentColor" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Add Brand Cover</span>
+                    </div>
+                )}
+                
+                <div className="absolute top-6 right-6 flex items-center gap-2 opacity-0 group-hover/banner:opacity-100 transition-opacity">
+                    <div className="relative overflow-hidden">
+                        <ImageCropper 
+                            label=""
+                            hideDefaultUI={true}
+                            aspectRatio={16/5} 
+                            className="w-full h-full absolute inset-0 opacity-0 cursor-pointer z-10"
+                            currentImage={bannerPreview || undefined}
+                            onImageCropped={(img) => {
+                                setBannerPreview(img);
+                                setValue("banner", img);
+                            }}
+                        />
+                        <Button variant="secondary" size="sm" className="rounded-xl shadow-lg border border-zinc-100 font-black text-[10px] uppercase tracking-widest gap-2 bg-white/90 backdrop-blur-sm">
+                            <Edit size={14} variant="Bold" color="currentColor" />
+                            Update Cover
+                        </Button>
+                    </div>
                 </div>
-                <div className="p-8 space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        {/* Logo Upload - More Compact */}
-                        <div className="md:col-span-1 flex flex-col items-center space-y-3">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">Business Logo</label>
-                            <div className="relative group">
-                                <div className="w-32 h-32 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary/50 relative text-center">
-                                    {logoPreview ? (
-                                        <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <Camera size={32} className="text-zinc-300 mx-auto" color="currentColor" />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                         <ImageCropper 
-                                            label=""
-                                            hideDefaultUI={true}
-                                            aspectRatio={1} 
-                                            className="w-full h-full absolute inset-0 opacity-0 cursor-pointer"
-                                            currentImage={logoPreview || undefined}
-                                            onImageCropped={(img) => {
-                                                setLogoPreview(img);
-                                                setValue("logo", img);
-                                            }}
-                                        />
-                                        <Camera size={20} className="text-white" variant="Bold" color="currentColor" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            </div>
 
-                        {/* Name & Bio */}
-                        <div className="md:col-span-3 space-y-6">
-                            <Input
-                                label="Display Name"
-                                placeholder="e.g. Strongest Fitness"
-                                {...register("businessName", { required: "Business Name is required" })}
-                                error={errors.businessName?.message}
-                                className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm font-medium"
-                            />
-                            <Input
-                                label="Tagline"
-                                placeholder="e.g. Excellence in every move"
-                                {...register("tagline")}
-                                className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm font-medium"
-                            />
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block">About Bio</label>
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1">
-                                        <Magicpen size={12} variant="Bold" color="currentColor" />
-                                        AI Enhance Available
-                                    </span>
-                                </div>
-                                <textarea 
-                                    {...register("description")}
-                                    placeholder="Briefly describe what your business offers..."
-                                    className="w-full min-h-[120px] bg-zinc-50 border-none rounded-xl p-4 text-sm font-medium text-zinc-600 outline-none focus:bg-white transition-all placeholder:text-zinc-300 resize-none"
+            {/* Logo Overlap - Polished */}
+            <div className="absolute -bottom-8 left-10">
+                <div className="relative group/logo">
+                    <div className="w-32 h-32 rounded-[28px] bg-white p-1.5 shadow-xl border border-zinc-100 overflow-hidden ring-4 ring-white/10 transition-transform duration-500 group-hover/logo:scale-105">
+                        <div className="w-full h-full rounded-[20px] bg-zinc-50 border-2 border-dashed border-zinc-100 flex items-center justify-center overflow-hidden transition-all group-hover/logo:border-primary/50 relative">
+                            {logoPreview ? (
+                                <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
+                            ) : (
+                                <Camera size={28} className="text-zinc-200" color="currentColor" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                 <ImageCropper 
+                                    label=""
+                                    hideDefaultUI={true}
+                                    aspectRatio={1} 
+                                    className="w-full h-full absolute inset-0 opacity-0 cursor-pointer z-20"
+                                    currentImage={logoPreview || undefined}
+                                    onImageCropped={(img) => {
+                                        setLogoPreview(img);
+                                        setValue("logo", img);
+                                    }}
                                 />
+                                <Edit size={20} className="text-white" variant="Bold" color="currentColor" />
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+         </div>
+         <div className="h-12" /> {/* Spacer for logo overlap */}
+      </div>
 
-            {/* Contact Details Card */}
-            <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-zinc-50">
-                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs flex items-center gap-2">
-                        <DirectboxSend size={16} variant="Bold" className="text-primary" color="currentColor" />
-                        Contact & Location
-                    </h2>
+      {/* Form Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Core Identity Card */}
+        <section className="bg-white rounded-[32px] border border-zinc-100 p-8 shadow-sm space-y-8">
+            <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                    <h2 className="text-lg font-black text-zinc-900 tracking-tight">Public Identity</h2>
+                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest">Display name and narrative bio</p>
                 </div>
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-300">
+                    <Brush size={20} variant="Bold" color="currentColor" />
+                </div>
+            </div>
+
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
-                        label="Support Email"
+                        label="Storefront Name"
+                        placeholder="e.g. Strongest Fitness"
+                        {...register("businessName", { required: "Name is required" })}
+                        error={errors.businessName?.message}
+                        className="bg-white border border-zinc-200 h-12 rounded-xl text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                    <Input
+                        label="Marketing Tagline"
+                        placeholder="e.g. Unleash your potential"
+                        {...register("tagline")}
+                        className="bg-white border border-zinc-200 h-12 rounded-xl text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        endIcon={<Magicpen size={18} className="text-primary/50" variant="Bold" color="currentColor" />}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                     <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">About Bio</label>
+                        <div className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest">
+                            <Flash size={12} variant="Bold" color="currentColor" />
+                            AI Assist
+                        </div>
+                    </div>
+                    <textarea 
+                        {...register("description")}
+                        placeholder="Tell your story. What makes your business unique?"
+                        className="w-full min-h-[160px] bg-white border border-zinc-200 rounded-[20px] p-5 text-sm font-medium text-zinc-600 outline-none transition-all placeholder:text-zinc-300 resize-none shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                </div>
+            </div>
+        </section>
+
+        {/* Reach & Social Card */}
+        <section className="bg-white rounded-[32px] border border-zinc-100 p-8 shadow-sm space-y-8">
+            <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                    <h2 className="text-lg font-black text-zinc-900 tracking-tight">Channels & Access</h2>
+                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest">Contact details and social links</p>
+                </div>
+                <div className="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-300">
+                    <DirectboxSend size={20} variant="Bold" color="currentColor" />
+                </div>
+            </div>
+
+            <div className="space-y-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                        label="Official Email"
                         type="email"
                         {...register("email")}
-                        startIcon={<Sms variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
-                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                        startIcon={<Sms variant="Bold" size={20} className="text-primary/40" color="currentColor" />}
+                        className="bg-white border border-zinc-200 h-12 rounded-xl text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                     <Input
                         label="Public Phone"
                         {...register("mobile")}
-                        startIcon={<Call variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
-                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                        startIcon={<Call variant="Bold" size={20} className="text-primary/40" color="currentColor" />}
+                        className="bg-white border border-zinc-200 h-12 rounded-xl text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
-                    <div className="md:col-span-2">
-                         <Input
-                            label="Physical Address"
-                            {...register("location")}
-                            startIcon={<Location variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
-                            className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
-                        />
-                    </div>
                 </div>
-            </section>
-        </div>
+                <Input
+                    label="Business Location"
+                    {...register("location")}
+                    startIcon={<Location variant="Bold" size={20} className="text-primary/40" color="currentColor" />}
+                    className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm shadow-sm font-bold"
+                />
 
-        {/* Sidebar Column */}
-        <div className="lg:col-span-4 space-y-8">
-            
-            {/* Visual Media Card */}
-            <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-zinc-50">
-                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs">Page Styling</h2>
-                </div>
-                <div className="p-6 space-y-4">
-                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">Cover Banner</label>
-                        <div className="relative h-32 w-full rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden group hover:border-primary/50 transition-all">
-                            {bannerPreview ? (
-                                <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
-                            ) : (
-                                <Camera size={24} className="text-zinc-300" color="currentColor" />
-                            )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <ImageCropper 
-                                    label=""
-                                    hideDefaultUI={true}
-                                    aspectRatio={16/5} 
-                                    className="w-full h-full absolute inset-0 opacity-0 cursor-pointer"
-                                    currentImage={bannerPreview || undefined}
-                                    onImageCropped={(img) => {
-                                        setBannerPreview(img);
-                                        setValue("banner", img);
-                                    }}
-                                />
-                                <Camera size={20} className="text-white" variant="Bold" color="currentColor" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="p-4 bg-zinc-50 rounded-xl">
-                        <div className="flex items-center gap-2 mb-1">
-                            <InfoCircle size={14} className="text-primary" variant="Bold" color="currentColor" />
-                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-wider">Format Guides</p>
-                        </div>
-                        <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-widest">
-                            Logo: 400x400 JPG/PNG<br/>
-                            Banner: 1920x600 JPG
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-             {/* Social Links Card */}
-             <section className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-zinc-50">
-                    <h2 className="font-black text-zinc-900 uppercase tracking-wider text-xs flex items-center gap-2">
-                        <Global size={16} variant="Bold" className="text-primary" color="currentColor" />
-                        Online Presence
-                    </h2>
-                </div>
-                <div className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-zinc-50">
                     <Input
                         label="Instagram"
                         placeholder="username"
                         {...register("instagram")}
-                        startIcon={<Instagram variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
-                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                        startIcon={<Instagram variant="Bold" size={20} className="text-[#E1306C]/60" color="currentColor" />}
+                        className="bg-white border border-zinc-200 h-12 rounded-xl text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                     <Input
-                        label="Twitter / X"
+                        label="X / Twitter"
                         placeholder="handle"
                         {...register("twitter")}
-                        startIcon={<Global variant="Linear" size={18} className="text-zinc-400" color="currentColor" />}
-                        className="bg-zinc-50 border-none h-12 rounded-xl focus:bg-white text-sm"
+                        startIcon={<Global variant="Bold" size={20} className="text-zinc-400" color="currentColor" />}
+                        className="bg-white border border-zinc-200 h-12 rounded-xl text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                 </div>
-            </section>
+            </div>
+        </section>
 
-            {/* Live Preview Button */}
-            <Button 
-                onClick={() => router.push("/business-profile/strongest-fitness")}
-                variant="outline"
-                className="w-full h-14 rounded-2xl border-white bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-900/10 transition-all"
-            >
-                Preview Live Page
-            </Button>
-        </div>
+        {/* Live Preview / Link Card - More Integrated */}
+        <section 
+            className="lg:col-span-2 group relative p-8 rounded-[32px] bg-zinc-900 overflow-hidden cursor-pointer shadow-xl shadow-zinc-950/10 transition-all hover:translate-y-[-2px]"
+            onClick={() => router.push(`/business-profile/${initialData?.link || "strongest-fitness"}`)}
+        >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[60px] transition-all group-hover:bg-primary/20" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Active Storefront</span>
+                    </div>
+                    <h3 className="text-xl font-black text-white tracking-tight">View your public portal live</h3>
+                    <p className="text-sm font-medium text-zinc-500">Check how your brand appears to athletes across the world.</p>
+                </div>
+                <Button className="h-12 px-8 rounded-xl bg-white text-zinc-950 hover:bg-zinc-100 font-black text-xs uppercase tracking-widest gap-3 shadow-2xl">
+                    Open Portal
+                    <ArrowRight size={18} variant="Bold" color="currentColor" />
+                </Button>
+            </div>
+        </section>
       </div>
     </div>
   );
