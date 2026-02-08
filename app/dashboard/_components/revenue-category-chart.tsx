@@ -50,7 +50,7 @@ export function RevenueCategoryChart({ data: incomingData, timeRange = "1Y" }: R
   })) || [];
 
   return (
-    <div className="flex h-full min-h-[460px] flex-col gap-6 rounded-[32px] border border-zinc-100 bg-white p-8">
+    <div className="flex h-full min-h-[460px] flex-col gap-6 rounded-[32px] border border-zinc-100 bg-white p-5 md:p-8">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-black text-zinc-900 tracking-tight">Revenue breakdown</h2>
@@ -67,14 +67,18 @@ export function RevenueCategoryChart({ data: incomingData, timeRange = "1Y" }: R
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={80}
-              outerRadius={110}
+              innerRadius="60%"
+              outerRadius="80%"
               paddingAngle={4}
               dataKey="value"
               stroke="none"
               label={({ cx, cy, midAngle = 0, innerRadius = 0, outerRadius = 0, value }) => {
                 const RADIAN = Math.PI / 180;
-                const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                // Recharts provides radius in pixels even if props are %, we can use them
+                // Calculate position for label (centered in slice arc)
+                const rInner = Number(innerRadius); 
+                const rOuter = Number(outerRadius);
+                const radius = rInner + (rOuter - rInner) * 0.5;
                 const x = cx + radius * Math.cos(-midAngle * RADIAN);
                 const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -85,7 +89,7 @@ export function RevenueCategoryChart({ data: incomingData, timeRange = "1Y" }: R
                     fill="white"
                     textAnchor="middle"
                     dominantBaseline="central"
-                    className="text-[9px] font-black"
+                    className="text-[9px] font-black pointer-events-none"
                   >
                     {Math.round(value)}%
                   </text>
@@ -102,7 +106,7 @@ export function RevenueCategoryChart({ data: incomingData, timeRange = "1Y" }: R
         </ResponsiveContainer>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 pt-2 max-w-sm mx-auto">
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 pt-2 max-w-sm mx-auto">
         {chartData.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />

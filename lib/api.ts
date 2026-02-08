@@ -18,7 +18,7 @@ apiClient.interceptors.request.use(
       try {
         const { state } = JSON.parse(authStorage);
         if (state?.token) {
-          config.headers.Authorization = `Bearer ${state.token}`;
+          config.headers['x-auth-token'] = state.token;
         }
       } catch (error) {
         console.error("Failed to parse auth token", error);

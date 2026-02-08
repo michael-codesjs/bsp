@@ -7,7 +7,7 @@ import * as z from "zod";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sms, Lock1, Google, Apple } from "iconsax-react";
+import { Sms, Lock1 } from "iconsax-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -154,23 +154,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="relative my-12 text-center text-zinc-200">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-current opacity-50"></div>
-            </div>
-            <span className="relative bg-white px-6 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
-              Or continue with
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="bg-white border-zinc-200 text-black hover:bg-zinc-50 h-13 rounded-2xl transition-all hover:border-zinc-300 text-xs font-black shadow-sm group">
-              <Google color="currentColor" variant="Bold" size={20} />
-            </Button>
-            <Button variant="outline" className="bg-white border-zinc-200 text-black hover:bg-zinc-50 h-13 rounded-2xl transition-all hover:border-zinc-300 text-xs font-black shadow-sm group">
-              <Apple color="currentColor" variant="Bold" size={20} />
-            </Button>
-          </div>
         </div>
 
         {/* Floating Footer Below Card */}

@@ -9,7 +9,7 @@ import {
   Wallet3,
   CalendarTick
 } from "iconsax-react";
-import { StatCard } from "@/components/layout/stat-card";
+import { StatCard } from "@/components/ui/stat-card";
 import { ActivityChart } from "./activity-chart";
 import { RevenueCategoryChart } from "./revenue-category-chart";
 import { getDashboardData } from "../actions";
@@ -98,7 +98,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
       </header>
       
       {/* Stats Grid */}
-      <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-500", loading ? "opacity-50 blur-[2px] pointer-events-none" : "opacity-100")}>
+      <div className={cn("grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 transition-all duration-500", loading ? "opacity-50 blur-[2px] pointer-events-none" : "opacity-100")}>
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}

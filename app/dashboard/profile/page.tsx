@@ -1,11 +1,12 @@
 import { cookies } from "next/headers";
-import { ProfileForm } from "./profile-form";
+import { ProfileForm } from "./_components";
 
 async function getBusinessDetails(token: string) {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://test-api.gymble.us"}/website/business/profile/bisDetails`, {
+      method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "x-auth-token": token,
         "Content-Type": "application/json",
       },
       next: { revalidate: 0 } // Don't cache for editing
@@ -13,7 +14,7 @@ async function getBusinessDetails(token: string) {
     
     if (!response.ok) return null;
     const data = await response.json();
-    return data?.data || data;
+    return (data?.data || data).businessData;
   } catch (error) {
     console.error("Failed to fetch business details on server:", error);
     return null;
@@ -22,21 +23,10 @@ async function getBusinessDetails(token: string) {
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
-  
-  // Extract token from auth-storage cookie
-  const authStorage = cookieStore.get("auth-storage")?.value;
-  let token = null;
-  if (authStorage) {
-    try {
-      const decoded = decodeURIComponent(authStorage);
-      const { state } = JSON.parse(decoded);
-      token = state?.token;
-    } catch (e) {
-      console.error("Failed to parse auth token from cookie", e);
-    }
-  }
+  const token = cookieStore.get("token")?.value!;
+  const initialData = await getBusinessDetails(token);
 
-  const initialData = token ? await getBusinessDetails(token) : null;
+  console.log('initialData:', initialData)
 
   return (
     <ProfileForm initialData={initialData} />

@@ -80,7 +80,7 @@ export function ActivityChart({ data: incomingData, timeRange = "1Y" }: Activity
   })) || data;
 
   return (
-    <div className="flex h-full min-h-[460px] flex-col gap-6 rounded-[32px] border border-zinc-100 bg-white p-8">
+    <div className="flex h-full min-h-[460px] flex-col gap-6 rounded-[32px] border border-zinc-100 bg-white p-5 md:p-8">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-black text-zinc-900 tracking-tight">Your Activity</h2>

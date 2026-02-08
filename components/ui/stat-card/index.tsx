@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +28,7 @@ export function StatCard({
   return (
     <div 
       className={cn(
-        "relative flex-1 h-[168px] flex flex-col p-6 gap-5 border border-white/10 rounded-[20px] overflow-hidden isolate transition-all hover:shadow-xl group",
+        "relative flex-1 h-auto min-h-40 md:h-[168px] flex flex-col p-5 md:p-6 gap-3 md:gap-5 border border-white/10 rounded-[24px] md:rounded-[20px] overflow-hidden isolate transition-all hover:shadow-xl group",
         className
       )}
       style={{ background: gradient }}
@@ -47,24 +45,24 @@ export function StatCard({
       )}
       
       <div className="relative z-10 flex flex-col h-full justify-between">
-        <div className="flex justify-between items-center">
-          <p className="text-white font-semibold text-base leading-[120%]">{label}</p>
-          <div className="w-11 h-11 flex items-center justify-center bg-white/95 rounded-full p-2.5 shadow-sm text-zinc-950">
-            <IconComponent size={24} color="currentColor" variant="Bold" />
+        <div className="flex justify-between items-start md:items-center">
+          <p className="text-white font-semibold text-sm md:text-base leading-[120%]">{label}</p>
+          <div className="w-9 h-9 md:w-11 md:h-11 flex items-center justify-center bg-white/95 rounded-full p-2 md:p-2.5 shadow-sm text-zinc-950">
+            <IconComponent className="w-5 h-5 md:w-6 md:h-6" color="currentColor" variant="Bold" />
           </div>
         </div>
         
         {loading ? (
              <div className="space-y-2">
-                <Skeleton className="h-10 w-32 bg-white/20" />
-                <Skeleton className="h-4 w-24 bg-white/10" />
+                <Skeleton className="h-9 md:h-10 w-28 md:w-32 bg-white/20" />
+                <Skeleton className="h-4 md:h-4 w-20 md:w-24 bg-white/10" />
              </div>
         ) : (
           <div>
-            <p className="text-white font-semibold text-[32px] leading-[121.1%] tracking-tight">{displayValue}</p>
+            <p className="text-white font-semibold text-2xl md:text-[32px] leading-[121.1%] tracking-tight">{displayValue}</p>
             {change && (
-                <p className={`text-sm font-bold mt-1 ${change.startsWith('+') ? 'text-white' : 'text-red-200'}`}>
-                    {change} <span className="text-white/60 font-semibold text-xs ml-1 uppercase tracking-widest">from last month</span>
+                <p className={`text-[10px] md:text-sm font-bold mt-1 ${change.startsWith('+') ? 'text-white' : 'text-red-200'}`}>
+                    {change} <span className="text-white/60 font-semibold text-[8px] md:text-xs ml-1 uppercase tracking-widest hidden md:inline">from last month</span>
                 </p>
             )}
           </div>

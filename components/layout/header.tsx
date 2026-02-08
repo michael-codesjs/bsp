@@ -1,25 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Notification } from "iconsax-react";
 import Image from "next/image";
+import { useAuthStore } from "@/store/use-auth-store";
 
 export function DashboardHeader() {
-  const [userData, setUserData] = useState<any>(null);
+  const { user } = useAuthStore();
 
-  useEffect(() => {
-    // Sync with localStorage on mount
-    const storedUser = localStorage.getItem("gymble_user");
-    if (storedUser) {
-      try {
-        setUserData(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Failed to parse user data from localStorage", e);
-      }
-    }
-  }, []);
-
-  const businessName = userData?.brand || userData?.bisName || userData?.name || "Admin Demo";
+  const businessName = (user as any)?.brand || (user as any)?.bisName || user?.name || "Admin Demo";
   const initials = businessName
     .split(" ")
     .map((n: string) => n[0])
@@ -44,9 +33,9 @@ export function DashboardHeader() {
         </button>
         
         <div className="h-10 md:h-11 pl-1 pr-1 md:pr-4 rounded-xl md:rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center gap-2 md:gap-3 hover:bg-white transition-all cursor-pointer">
-          {userData?.logo ? (
+          {(user as any)?.logo ? (
             <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl overflow-hidden relative">
-              <Image src={userData.logo} alt={businessName} fill className="object-cover" />
+              <Image src={(user as any).logo} alt={businessName} fill className="object-cover" />
             </div>
           ) : (
             <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-black text-xs md:text-sm">

@@ -4,7 +4,7 @@ import React from "react";
 import { Calendar, ArrowDown2, Clock, TickCircle } from "iconsax-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Popover } from "./popover";
+import { Popover } from "../popover";
 
 interface DateRangePickerProps {
   startDate: string;

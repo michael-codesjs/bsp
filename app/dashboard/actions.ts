@@ -1,6 +1,4 @@
 "use server";
-
-import { writeFileSync } from "fs";
 import { cookies } from "next/headers";
 
 export async function getDashboardData(startDate = "2026-01-01", endDate = "2026-12-31") {
@@ -39,10 +37,10 @@ export async function getDashboardData(startDate = "2026-01-01", endDate = "2026
         startDate: startDate,
         endDate: endDate
       }),
+      cache: "no-store"
     });
 
     const resBody = await response.json();
-    writeFileSync("./response.json", JSON.stringify(resBody, null, 2));
 
     if (!response.ok) {
         return { success: false, error: resBody?.message || "Failed to fetch dashboard data" };
