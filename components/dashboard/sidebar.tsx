@@ -125,9 +125,9 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </div>
       </motion.aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-t border-zinc-100 md:hidden pb-safe">
-        <div className="flex items-center justify-around h-16 px-2">
+      {/* Mobile Bottom Navigation (Liquid Glass) */}
+      <nav className="fixed bottom-6 left-6 right-6 z-50 md:hidden">
+        <div className="bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] h-20 px-4 flex items-center justify-around">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -135,26 +135,29 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 key={item.href} 
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all duration-200 min-w-[64px]",
-                  isActive ? "text-primary scale-110" : "text-zinc-400"
+                  "relative flex flex-col items-center justify-center transition-all duration-300",
+                  isActive ? "scale-110" : "hover:scale-105"
                 )}
               >
                 <div className={cn(
-                  "p-2 rounded-xl transition-colors",
-                  isActive ? "bg-primary/10" : ""
+                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300",
+                  isActive 
+                    ? "bg-primary text-white shadow-lg shadow-primary/30 rotate-0" 
+                    : "text-zinc-400 hover:text-zinc-600"
                 )}>
                   <item.icon 
                     variant={isActive ? "Bold" : "Linear"} 
-                    size={20} 
+                    size={24} 
                     color="currentColor"
                   />
                 </div>
-                <span className={cn(
-                  "text-[10px] font-black uppercase tracking-widest mt-0.5 transition-all text-center",
-                  isActive ? "opacity-100" : "opacity-0 h-0"
-                )}>
-                  {item.label}
-                </span>
+                
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeIndicator"
+                    className="absolute -bottom-2 w-1.5 h-1.5 bg-primary rounded-full"
+                  />
+                )}
               </Link>
             );
           })}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -8,7 +9,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Gymble | Business Submission Project",
+  title: "Gymble",
   description: "Operating system for sports businesses.",
 };
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         className={`${dmSans.variable} font-sans antialiased`}
       >
         {children}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

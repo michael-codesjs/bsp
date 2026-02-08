@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function DashboardFooter() {
   return (
-    <footer className="h-16 border-t border-zinc-100 bg-white flex items-center justify-between px-8 text-xs font-medium text-zinc-400">
+    <footer className="h-16 flex items-center justify-between px-8 text-xs font-medium text-zinc-400">
       <div className="flex items-center gap-6">
         <span>© 2026 Gymble Inc.</span>
         <Link href="#" className="hover:text-zinc-600 transition-colors">Privacy Policy</Link>

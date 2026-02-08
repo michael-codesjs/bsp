@@ -10,6 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Sms, Lock1, Google, Apple } from "iconsax-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
+import axios from "@/lib/api";
+import { loginAction } from "./actions";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -31,25 +35,44 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "admin@gymble.us",
-      password: "password123",
+      email: "shreyansh+11@gymble.us",
+      password: "user$456",
     },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     clearErrors("root");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (data.email === "admin@gymble.us" && data.password === "password123") {
-      setAuth(
-        { id: "1", email: data.email, name: "Admin User" },
-        "mock-jwt-token-behavior"
-      );
-      router.push("/dashboard");
-    } else {
-      setError("root", {
-        message: "Invalid email or password. Hint: admin@gymble.us / password123",
+    
+    try {
+      const result = await loginAction({
+        email: data.email,
+        password: data.password,
       });
+
+      if (result.success && result.token) {
+        // The server action already sets the cookie, but we update our client stores
+        const userData = result.user;
+        
+        // Save user data to localStorage
+        localStorage.setItem("gymble_user", JSON.stringify(userData));
+
+        // Update auth store
+        setAuth({
+          id: userData.id || userData.bisPlanId?.toString() || "1",
+          email: userData.email,
+          name: userData.brand || `${userData.firstName} ${userData.lastName}` || "Business Manager"
+        }, result.token);
+
+        toast.success("Logged in successfully!");
+        router.push("/dashboard");
+      } else {
+        throw new Error(result.error || "Login failed");
+      }
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      const errorMessage = error.message || "Invalid credentials. Please try again.";
+      toast.error(errorMessage);
+      setError("root", { message: errorMessage });
     }
   };
 
