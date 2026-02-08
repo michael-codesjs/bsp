@@ -14,19 +14,22 @@ export async function loginAction(formData: any) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://test-api.gymble.us";
   
   try {
-    const response = await fetch(`${apiUrl}/website/auth/login`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://test-api.gymble.us"}/website/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
     });
 
     const resBody = await response.json();
     const headers = response.headers;
     
-    // Node.js fetch allows us to see all headers, including Set-Cookie
-    let token = headers.get("x-auth-token") || headers.get("token");
+    // Explicitly check for x-auth-token first as this is what our API uses
+    let token = headers.get("x-auth-token");
     
     // If not in headers, manually parse it from Set-Cookie
     if (!token) {

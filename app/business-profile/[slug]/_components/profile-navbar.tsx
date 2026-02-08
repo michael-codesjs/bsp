@@ -15,8 +15,8 @@ export function ProfileNavbar({ scrolled }: ProfileNavbarProps) {
         scrolled ? "bg-white/80 border-zinc-200 shadow-sm" : "bg-transparent border-transparent"
     )}>
         <div className="flex items-center gap-2 mr-auto">
-            <Image src="/gymble.png" alt="Gymble" width={32} height={32} className="object-contain" />
-            <span className={cn("font-black text-lg tracking-tight", scrolled ? "text-zinc-900" : "text-white")}>Gymble</span>
+            <Image src="/gymble.png" alt="Gymble" width={100} height={32} className="object-contain" />
+           
         </div>
 
         <div className="hidden md:flex items-center gap-6">
