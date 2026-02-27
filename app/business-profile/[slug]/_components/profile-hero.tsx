@@ -14,10 +14,10 @@ export function ProfileHero({ business }: ProfileHeroProps) {
     <div className="relative h-[45vh] md:h-[55vh] min-h-[400px] w-full overflow-hidden bg-zinc-900">
         {/* Banner Image */}
         <Image 
-            src={business.banner} 
-            alt={business.name} 
+            src="/Basketball Background.png" 
+            alt="Basketball Background"
             fill 
-            className="object-cover opacity-80"
+            className="object-cover object-bottom opacity-80"
             priority
         />
         {/* Gradient Overlay */}
@@ -27,12 +27,14 @@ export function ProfileHero({ business }: ProfileHeroProps) {
         <div className="absolute bottom-0 left-0 right-0 px-6 md:px-12 pb-12 pt-32 max-w-7xl mx-auto flex flex-col md:flex-row items-end gap-8">
             {/* Logo */}
             <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-3xl overflow-hidden border-4 border-white/10 shadow-2xl shrink-0 bg-white">
-                <Image 
-                    src={business.logo} 
-                    alt={business.name} 
-                    fill 
-                    className="object-cover"
-                />
+                <div className="absolute inset-4">
+                    <Image 
+                        src="/All Star Basketball Academy.webp" 
+                        alt="All Star Basketball Academy" 
+                        fill 
+                        className="object-contain"
+                    />
+                </div>
             </div>
 
             {/* Text Info */}
